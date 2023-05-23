@@ -40,18 +40,23 @@ end
 ## forces
 
 function ace_forces(V, at; domain=1:length(at), executor=ThreadedEx())
+    # functions to reduce allocations during reduction
+    function _reduce(s::AbstractVector, a)
+        for i in eachindex(a[2])
+            s[a[2][i]] -= a[3][i]
+        end
+        s[a[1]] += sum(a[3])
+        return s
+    end
+    function _reduce(s::AbstractVector, a::AbstractVector)
+        return s .+ a
+    end
     nlist = neighborlist(at, cutoff(V))
-    F = Folds.sum( domain, executor ) do i
+    F = Folds.mapreduce( _reduce,  domain, executor; init=zeros(SVector{3, Float64}, length(at)) ) do i
         j, R, Z = neigsz(nlist, at, i)
         _, tmp = ace_evaluate_d(V, R, Z, _atomic_number(at,i))
 
-        #TODO make this faster
-        f = zeros(eltype(tmp.dV), length(at))
-        for k in eachindex(j)
-            f[j[k]] -= tmp.dV[k]
-            f[i]    += tmp.dV[k]
-        end
-        f
+        i, j, tmp.dV
     end
     return F
 end
@@ -59,13 +64,14 @@ end
 
 function ace_forces(::OneBody, at::Atoms; kwargs...)
     T = (eltype ∘ eltype)(at.X)
-    F = [ SVector{3}( zeros(T, 3) ) for i in 1:length(at) ]
+    F = zeros(SVector{3,T}, length(at)  )
     return F
 end
 
 function ace_forces(::OneBody, as::AbstractSystem; kwargs...)
     T = eltype( ustrip.( position(as, 1) )  )
-    F = [ SVector{3}( zeros(T, 3) ) for _ in 1:length(as) ]
+    #F = [ SVector{3}( zeros(T, 3) ) for _ in 1:length(as) ]
+    F = zeros(SVector{3,T}, length(as)  )
     return F
 end
 

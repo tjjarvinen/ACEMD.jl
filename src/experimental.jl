@@ -52,3 +52,22 @@ function energy_nonthreaded(calc, at::Atoms, nlist; domain=1:length(at))
     end
     return Etot
 end
+
+##
+
+function ace_forces_old(V, at; domain=1:length(at), executor=ThreadedEx())
+    nlist = neighborlist(at, cutoff(V))
+    F = Folds.sum( domain, executor ) do i
+        j, R, Z = neigsz(nlist, at, i)
+        _, tmp = ace_evaluate_d(V, R, Z, _atomic_number(at,i))
+
+        #TODO make this faster
+        f = zeros(eltype(tmp.dV), length(at))
+        for k in eachindex(j)
+            f[j[k]] -= tmp.dV[k]
+            f[i]    += tmp.dV[k]
+        end
+        f
+    end
+    return F
+end

@@ -5,7 +5,7 @@ using AtomsBase
 using CellListMap
 using Folds
 using FLoops
-#using SparseArrays
+using SparseArrays
 using StaticArrays
 using Unitful
 
