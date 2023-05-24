@@ -40,23 +40,18 @@ end
 ## forces
 
 function ace_forces(V, at; domain=1:length(at), executor=ThreadedEx())
-    # functions to reduce allocations during reduction
-    function _reduce(s::AbstractVector, a)
-        for i in eachindex(a[2])
-            s[a[2][i]] -= a[3][i]
-        end
-        s[a[1]] += sum(a[3])
-        return s
-    end
-    function _reduce(s::AbstractVector, a::AbstractVector)
-        return s .+ a
-    end
     nlist = neighborlist(at, cutoff(V))
-    F = Folds.mapreduce( _reduce,  domain, executor; init=zeros(SVector{3, Float64}, length(at)) ) do i
+    F = Folds.sum( domain, executor ) do i
         j, R, Z = neigsz(nlist, at, i)
         _, tmp = ace_evaluate_d(V, R, Z, _atomic_number(at,i))
 
-        i, j, tmp.dV
+        #TODO make this faster
+        f = zeros(eltype(tmp.dV), length(at))
+        for k in eachindex(j)
+            f[j[k]] -= tmp.dV[k]
+            f[i]    += tmp.dV[k]
+        end
+        f
     end
     return F
 end
