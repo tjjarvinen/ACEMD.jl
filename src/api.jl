@@ -1,15 +1,15 @@
 """
-    ace_energy(potential, atoms, Kwargs)
+    ace_energy(potential, ACE1.Atoms, Kwargs)
 
 Calculates ACE potential energy for atomic system.
-The `atoms` object needs to be in `AtomsBase` compatable format.
+The `ACE1.Atoms` object needs to be in `ACE1.AtomsBase` compatable format.
 The returned energy has a unit as defined by `Unitful`.
 
 Parallel execution is done with Transducers.jl and there is an option to
 use different executors. Look for `ThreadedEx` for more details on how to control it. 
 
 # Kwargs
-- `domain=1:length(atoms)`  :  choose subset of atoms to which energy is calculated
+- `domain=1:length(ACE1.Atoms)`  :  choose subset of ACE1.Atoms to which energy is calculated
 - `executor=ThreadedEx()`   :  used to control multithreading using Transducers.jl
 - `energy_unit`  :   used to override energy unit for the calculation
 - `length_unit`  :   used to override lenght unit for the calculation
@@ -24,14 +24,14 @@ function ace_energy(calc, at; domain=1:length(at), executor=ThreadedEx(), energy
     return Etot * energy_unit
 end
 
-function ace_energy(V::OneBody, at::Atoms; domain=1:length(at), energy_unit=default_energy, kwargs...)
+function ace_energy(V::ACE1.OneBody, at::ACE1.Atoms; domain=1:length(at), energy_unit=default_energy, kwargs...)
     E = sum( domain ) do i
-        ACE1.evaluate(V, chemical_symbol(at.Z[i]) )
+        ACE1.evaluate(V, ACE1.chemical_symbol(at.Z[i]) )
     end
     return E * energy_unit
 end
 
-function ace_energy(V::OneBody, as::AbstractSystem; domain=1:length(as), energy_unit=default_energy, kwargs...)
+function ace_energy(V::ACE1.OneBody, as::AbstractSystem; domain=1:length(as), energy_unit=default_energy, kwargs...)
     E = sum( domain ) do i
         ACE1.evaluate(V, atomic_symbol(as, i) )
     end
@@ -96,17 +96,17 @@ end
 ## forces
 
 """
-    ace_forces(potential, atoms, Kwargs)
+    ace_forces(potential, ACE1.Atoms, Kwargs)
 
 Calculates forces for ACE potential for given atomic system.
-The `atoms` object needs to be in `AtomsBase` compatable format.
+The `ACE1.Atoms` object needs to be in `ACE1.AtomsBase` compatable format.
 The returned energy has a unit as defined by `Unitful`.
 
 Parallel execution is done with Transducers.jl and there is an option to
 use different executors. Look for `ThreadedEx` for more details on how to control it. 
 
 # Kwargs
-- `domain=1:length(atoms)`  :  choose subset of atoms to which energy is calculated
+- `domain=1:length(ACE1.Atoms)`  :  choose subset of ACE1.Atoms to which energy is calculated
 - `executor=ThreadedEx()`   :  used to control multithreading using Transducers.jl
 - `energy_unit`  :   used to override energy unit for the calculation
 - `length_unit`  :   used to override lenght unit for the calculation
@@ -137,13 +137,13 @@ function ace_forces(V, at;
 end
 
 
-function ace_forces(::OneBody, at::Atoms; energy_unit=default_energy, length_unit=default_length, kwargs...)
+function ace_forces(::ACE1.OneBody, at::ACE1.Atoms; energy_unit=default_energy, length_unit=default_length, kwargs...)
     T = (eltype ∘ eltype)(at.X)
     F = [ SVector{3}( zeros(T, 3) ) * (energy_unit / length_unit) for _ in 1:length(at) ]
     return F
 end
 
-function ace_forces(::OneBody, as::AbstractSystem; energy_unit=default_energy, length_unit=default_length, kwargs...)
+function ace_forces(::ACE1.OneBody, as::AbstractSystem; energy_unit=default_energy, length_unit=default_length, kwargs...)
     T = eltype( ustrip.( position(as, 1) )  )
     F = [ SVector{3}( zeros(T, 3) ) * (energy_unit / length_unit) for _ in 1:length(as) ]
     return F
@@ -153,17 +153,17 @@ end
 ## virial
 
 """
-    ace_virial(potential, atoms, Kwargs)
+    ace_virial(potential, ACE1.Atoms, Kwargs)
 
 Calculates virial for ACE potential for given atomic system.
-The `atoms` object needs to be in `AtomsBase` compatable format.
+The `ACE1.Atoms` object needs to be in `ACE1.AtomsBase` compatable format.
 The returned energy has a unit as defined by `Unitful`.
 
 Parallel execution is done with Transducers.jl and there is an option to
 use different executors. Look for `ThreadedEx` for more details on how to control it. 
 
 # Kwargs
-- `domain=1:length(atoms)`  :  choose subset of atoms to which energy is calculated
+- `domain=1:length(ACE1.Atoms)`  :  choose subset of ACE1.Atoms to which energy is calculated
 - `executor=ThreadedEx()`   :  used to control multithreading using Transducers.jl
 - `energy_unit`  :   used to override energy unit for the calculation
 - `length_unit`  :   used to override lenght unit for the calculation
@@ -189,12 +189,12 @@ function ace_virial(V, at;
     return vir * (energy_unit * length_unit)
 end
 
-function ace_virial(::OneBody, at::Atoms; energy_unit=default_energy, length_unit=default_length, kwargs...)
+function ace_virial(::ACE1.OneBody, at::ACE1.Atoms; energy_unit=default_energy, length_unit=default_length, kwargs...)
     T = (eltype ∘ eltype)(at.X)
     return SMatrix{3,3}(zeros(T, 3,3)) * (energy_unit * length_unit)
 end
 
-function ace_virial(::OneBody, as::AbstractSystem; energy_unit=default_energy, length_unit=default_length, kwargs...)
+function ace_virial(::ACE1.OneBody, as::AbstractSystem; energy_unit=default_energy, length_unit=default_length, kwargs...)
     T = eltype( ustrip.( position( as[begin] ) )  )
     return SMatrix{3,3}(zeros(T, 3,3)) * (energy_unit * length_unit)
 end

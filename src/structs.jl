@@ -3,7 +3,7 @@ const default_length = u"Å"
 const default_energy = u"eV"
 
 struct ACEpotential{TE,TL,TC}
-    potentials::Vector{AbstractCalculator}
+    potentials::Vector{ACE1.AbstractCalculator}
     energy_unit::TE
     length_unit::TL
     cutoff_unit::TC

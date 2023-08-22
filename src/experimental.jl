@@ -1,7 +1,7 @@
 import Base.Threads.@spawn
 
 
-function energy_floops(calc, at::Atoms; domain=1:length(at), executor=ThreadedEx())
+function energy_floops(calc, at::ACE1.Atoms; domain=1:length(at), executor=ThreadedEx())
     nlist = neighbourlist(at, cutoff(calc))
     @floop executor for i in domain
         _, R, Z = neigsz(nlist, at, i)
@@ -11,12 +11,12 @@ function energy_floops(calc, at::Atoms; domain=1:length(at), executor=ThreadedEx
 end
 
 
-function energy_tasks(calc, at::Atoms; ntasks=1)
+function energy_tasks(calc, at::ACE1.Atoms; ntasks=1)
     nlist = neighbourlist(at, cutoff(calc))
     Δ = (Int ∘ floor)( length(at) / ntasks )
     tasks = map( 1:ntasks ) do i
         s = 1+(i-1)*Δ : i*Δ
-        @spawn energy_nonthreaded(calc, at::Atoms, nlist; domain=s)
+        @spawn energy_nonthreaded(calc, at::ACE1.Atoms, nlist; domain=s)
     end
     Etot = sum(tasks) do t
         fetch(t)
@@ -24,7 +24,7 @@ function energy_tasks(calc, at::Atoms; ntasks=1)
     return Etot
 end
 
-function energy_nonthreaded!(tmp, calc, at::Atoms; domain=1:length(at))
+function energy_nonthreaded!(tmp, calc, at::ACE1.Atoms; domain=1:length(at))
     # tmp = ACE1.alloc_temp(calc, at)
     nlist = neighbourlist(at, cutoff(calc))
     Etot = sum( domain ) do i
@@ -35,7 +35,7 @@ function energy_nonthreaded!(tmp, calc, at::Atoms; domain=1:length(at))
 end 
 
 
-function energy_nonthreaded(calc, at::Atoms; domain=1:length(at))
+function energy_nonthreaded(calc, at::ACE1.Atoms; domain=1:length(at))
     nlist = neighbourlist(at, cutoff(calc))
     Etot = sum( domain ) do i
         _, R, Z = neigsz(nlist, at, i)
@@ -44,7 +44,7 @@ function energy_nonthreaded(calc, at::Atoms; domain=1:length(at))
     return Etot
 end
 
-function energy_nonthreaded(calc, at::Atoms, nlist; domain=1:length(at))
+function energy_nonthreaded(calc, at::ACE1.Atoms, nlist; domain=1:length(at))
     #nlist = neighbourlist(at, cutoff(calc))
     Etot = sum( domain ) do i
         _, R, Z = neigsz(nlist, at, i)

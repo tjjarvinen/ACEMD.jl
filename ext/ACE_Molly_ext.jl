@@ -1,12 +1,8 @@
 module ACE_Molly_ext
 
-using ACE1
+import ACE1: AtomicNumber
 using ACEmd
-using CellListMap
-using Folds
 using Molly
-using Unitful
-using UnitfulAtomic
 
 
 function Molly.forces(
@@ -32,7 +28,7 @@ end
  
 
 function ACEmd._atomic_number(sys::Molly.System, i) 
-    return ACE1.AtomicNumber( sys.atoms_data[i].Z )
+    return AtomicNumber( sys.atoms_data[i].Z )
 end
 
 end # Module

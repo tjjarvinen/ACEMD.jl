@@ -2,13 +2,14 @@ module ACEmd
 
 using Reexport
 
-using ACE1
+import ACE1
 using ACEbase
 @reexport using AtomsBase
 using CellListMap
 using Folds
 @reexport using Folds: ThreadedEx, SequentialEx, DistributedEx
 using FLoops
+using NeighbourLists
 #using SparseArrays
 using StaticArrays
 @reexport using Unitful

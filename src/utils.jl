@@ -1,5 +1,5 @@
 
-function neigsz!(tmp, nlist::PairList, at::Atoms, i::Integer)
+function neigsz!(tmp, nlist::PairList, at::ACE1.Atoms, i::Integer)
     # from JuLIP
     j, R = neigs!(tmp.R, nlist, i)
     Z = tmp.Z
@@ -83,15 +83,15 @@ end
 
 
 function get_cutoff(V; cutoff_unit=default_length)
-    return cutoff(V) * cutoff_unit
+    return ACE1.cutoff(V) * cutoff_unit
 end
 
 function get_cutoff(V::ACEpotential; kwargs...)
     c = map( V ) do v
-        if typeof(v) <: OneBody
+        if typeof(v) <: ACE1.OneBody
             return 0
         else
-            return cutoff(v)
+            return ACE1.cutoff(v)
         end
     end
     return maximum( c )  * V.cutoff_unit
@@ -101,7 +101,7 @@ end
 
  ## CellListMap
 
-function neighborlist(at::Atoms, cutoff; kwargs...)
+function neighborlist(at::ACE1.Atoms, cutoff; kwargs...)
     return ACE1.neighbourlist(at, ustrip(u"Å", cutoff); kwargs...)
 end
 
@@ -145,7 +145,7 @@ function neigsz(list, ab, i)
     T = typeof( list[begin][3] )
     R = T[]
     j = Int[]
-    Z = JuLIP.AtomicNumber[]
+    Z = AtomicNumber[] # JuLIP from ACE1
 
     for x in list
         if x[1] == i
@@ -163,5 +163,5 @@ end
 
 
 
-_atomic_number(at::Atoms, i)          = at.Z[i]
+_atomic_number(at::ACE1.Atoms, i)          = at.Z[i]
 _atomic_number(ab::AbstractSystem, i) = ACE1.AtomicNumber(AtomsBase.atomic_number(ab,i))
